@@ -27,7 +27,7 @@ public class Restaurante {
         System.out.println("------------------------");
         System.out.println("El total de ventas para el restaurante es: " + total);
         ArrayList<Pedido> pedidosOrdenados = this.pedidosPorPrecio();
-        for(Pedido pedido : pedidosOrdenados) {
+        for (Pedido pedido : pedidosOrdenados) {
             pedido.generarReporte();
         }
     }
@@ -60,7 +60,7 @@ public class Restaurante {
         ArrayList<Pedido> izquierda = new ArrayList<>();
         ArrayList<Pedido> derecha = new ArrayList<>();
 
-        for(int i = 0; i < pedidos.size(); i++) {
+        for (int i = 0; i < pedidos.size(); i++) {
             if (i < pedidos.size() / 2) {
                 izquierda.add(pedidos.get(i));
             } else {
