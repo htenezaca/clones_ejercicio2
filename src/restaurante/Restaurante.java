@@ -2,24 +2,23 @@ package restaurante;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class Restaurante {
-    private List<Producto> productos;
-    private List<Pedido> pedidos;
-    private List<Usuario> usuarios;
+    private ArrayList<Producto> productos;
+    private ArrayList<Pedido> pedidos;
+    private ArrayList<Usuario> usuarios;
 
-    public Restaurante(List<Producto> productos, List<Pedido> pedidos, List<Usuario> usuarios) {
+    public Restaurante(ArrayList<Producto> productos, ArrayList<Pedido> pedidos, ArrayList<Usuario> usuarios) {
         this.productos = productos;
         this.pedidos = pedidos;
         this.usuarios = usuarios;
     }
 
-    public List<Producto> getProductos() {
+    public ArrayList<Producto> getProductos() {
         return productos;
     }
 
-    public void setProductos(List<Producto> productos) {
+    public void setProductos(ArrayList<Producto> productos) {
         this.productos = productos;
     }
 
@@ -27,52 +26,76 @@ public class Restaurante {
         int total = calcularTotal();
         System.out.println("------------------------");
         System.out.println("El total de ventas para el restaurante es: " + total);
-        List<Pedido> pedidosOrdenados = pedidosPorPrecio();
-        pedidosOrdenados.forEach(Pedido::generarReporte);
+        ArrayList<Pedido> pedidosOrdenados = this.pedidosPorPrecio();
+        for (Pedido pedido : pedidosOrdenados) {
+            pedido.generarReporte();
+        }
     }
 
     private int calcularTotal() {
-        return pedidos.stream()
-                .flatMap(pedido -> pedido.getProductos().stream())
-                .mapToInt(Producto::getPrecio)
-                .sum();
+        int total = 0;
+        for (Pedido pedido : pedidos) {
+            for (Producto producto : pedido.getProductos()) {
+                total += producto.getPrecio();
+            }
+        }
+        return total;
     }
 
-    public List<Pedido> pedidosPorPrecio() {
-        List<Pedido> pedidosCopia = new ArrayList<>(pedidos);
-        List<Pedido> pedidosOrdenados = ordenarPedidosPorPrecioHelper(pedidosCopia);
+    public ArrayList<Pedido> pedidosPorPrecio() {
+        ArrayList<Pedido> pedidosCopia = new ArrayList<>();
+        for (Pedido pedido : pedidos) {
+            pedidosCopia.add(pedido);
+        }
+        ArrayList<Pedido> pedidosOrdenados = ordenarPedidosPorPrecioHelper(pedidosCopia);
         Collections.reverse(pedidosOrdenados);
         return pedidosOrdenados;
     }
 
-    private List<Pedido> ordenarPedidosPorPrecioHelper(List<Pedido> pedidos) {
+    private ArrayList<Pedido> ordenarPedidosPorPrecioHelper(ArrayList<Pedido> pedidos) {
         if (pedidos.size() <= 1) {
             return pedidos;
         }
 
-        int mitad = pedidos.size() / 2;
-        List<Pedido> izquierda = ordenarPedidosPorPrecioHelper(pedidos.subList(0, mitad));
-        List<Pedido> derecha = ordenarPedidosPorPrecioHelper(pedidos.subList(mitad, pedidos.size()));
+        ArrayList<Pedido> izquierda = new ArrayList<>();
+        ArrayList<Pedido> derecha = new ArrayList<>();
+
+        for (int i = 0; i < pedidos.size(); i++) {
+            if (i < pedidos.size() / 2) {
+                izquierda.add(pedidos.get(i));
+            } else {
+                derecha.add(pedidos.get(i));
+            }
+        }
+
+        izquierda = ordenarPedidosPorPrecioHelper(izquierda);
+        derecha = ordenarPedidosPorPrecioHelper(derecha);
 
         return merge(izquierda, derecha);
     }
 
-    private List<Pedido> merge(List<Pedido> izquierda, List<Pedido> derecha) {
-        List<Pedido> resultado = new ArrayList<>();
+    private ArrayList<Pedido> merge(ArrayList<Pedido> izquierda, ArrayList<Pedido> derecha) {
+        ArrayList<Pedido> resultado = new ArrayList<>();
 
-        List<Pedido> copiaIzquierda = new ArrayList<>(izquierda);
-        List<Pedido> copiaDerecha = new ArrayList<>(derecha);
-
-        while (!copiaIzquierda.isEmpty() && !copiaDerecha.isEmpty()) {
-            Pedido primero = (copiaIzquierda.get(0).calcularTotal() < copiaDerecha.get(0).calcularTotal())
-                    ? copiaIzquierda.remove(0)
-                    : copiaDerecha.remove(0);
-
-            resultado.add(primero);
+        while (izquierda.size() > 0 && derecha.size() > 0) {
+            if (izquierda.get(0).calcularTotal() < derecha.get(0).calcularTotal()) {
+                resultado.add(izquierda.get(0));
+                izquierda.remove(0);
+            } else {
+                resultado.add(derecha.get(0));
+                derecha.remove(0);
+            }
         }
 
-        resultado.addAll(copiaIzquierda);
-        resultado.addAll(copiaDerecha);
+        while (izquierda.size() > 0) {
+            resultado.add(izquierda.get(0));
+            izquierda.remove(0);
+        }
+
+        while (derecha.size() > 0) {
+            resultado.add(derecha.get(0));
+            derecha.remove(0);
+        }
 
         return resultado;
     }
